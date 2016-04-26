@@ -83,29 +83,42 @@ if __name__ == "__main__":
     vc = cv2.VideoCapture(TEST_FN)
     #vc = cv2.VideoCapture(0)
 
-    mouths = np.empty((0, 4))
+    mouth_height = 50
+    mouth_width = 50
+
 
     rval, frame = vc.read() if vc.isOpened() else (False, None)
 
+    mouth_images = []
+
+    if rval:
+        mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
+
     while rval:
-        image = frame
+        image = frame.copy()
 
         face_rect = locate_face(image)
         highlight_rect(image, face_rect, color=(255,255,255), thickness=2)
 
         rects = locate_mouth(image)
         mouth = uniform_rect(select_mouth_candidate(rects, face_rect), face_rect, 50, 50)
+
+        mouth_image = frame[mouth[1]:(mouth[1] + mouth[3]), mouth[0]:(mouth[0] + mouth[2]), :]
+        mouth_images.append(mouth_image)
+        #print mouths.shape
+        #print mouth_image.shape
+        #mouths = np.concatenate((mouths, mouth_image), axis=0)
+
+
         highlight_rect(image, mouth, color=(0,0,0), thickness=2)
-
-        cv2.imshow('Frame', image)
+        cv2.imshow('Frame', mouth_image)
         cv2.waitKey(1)
-
-        mouths = np.vstack((mouths, mouth))
 
         rval, frame = vc.read()
 
     vc.release()
 
+    mouths = np.concatenate(mouth_images, axis=0)
     print mouths
 
     savemat("mouths.mat", {"mouths": mouths})
