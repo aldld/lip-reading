@@ -1,7 +1,10 @@
 import numpy as np
 from scipy.io import savemat
+import sys
 
 import cv2
+
+DEBUG = 0
 
 # Path to GRID corpus video data.
 DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
@@ -10,6 +13,11 @@ DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
 # TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
 #TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
 TEST_FN = "/mnt/hgfs/vm_shared/pgid4n.mpg"
+
+if len(sys.argv) == 2:
+    TEST_FN = sys.argv[1]
+
+print TEST_FN
 
 # Mouth detection cascade classifier.
 cc_mouth = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
@@ -85,29 +93,39 @@ if __name__ == "__main__":
     vc = cv2.VideoCapture(TEST_FN)
     #vc = cv2.VideoCapture(0)
 
-    mouths = np.empty((0, 4))
+    mouth_height = 50
+    mouth_width = 50
+
 
     rval, frame = vc.read() if vc.isOpened() else (False, None)
 
+    mouth_images = []
+
+    if rval:
+        mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
+
     while rval:
-        image = frame
+        image = frame.copy()
 
         face_rect = locate_face(image)
         highlight_rect(image, face_rect, color=(255,255,255), thickness=2)
 
         rects = locate_mouth(image)
         mouth = uniform_rect(select_mouth_candidate(rects, face_rect), face_rect, 50, 50)
-        highlight_rect(image, mouth, color=(0,0,0), thickness=2)
 
-        # cv2.imshow('Frame', image)
-        # cv2.waitKey(1)
+        mouth_image = frame[mouth[1]:(mouth[1] + mouth[3]), mouth[0]:(mouth[0] + mouth[2]), :]
+        mouth_images.append(mouth_image)        
 
-        mouths = np.vstack((mouths, mouth))
+	if DEBUG:
+	    highlight_rect(image, mouth, color=(0,0,0), thickness=2) 
+	    cv2.imshow('Frame', mouth_image)
+	    cv2.waitKey(1)
 
         rval, frame = vc.read()
 
     vc.release()
 
+    mouths = np.asarray(mouth_images)
     print mouths
 
     savemat("mouths.mat", {"mouths": mouths})
