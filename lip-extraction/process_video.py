@@ -99,8 +99,8 @@ if __name__ == "__main__":
         mouth = uniform_rect(select_mouth_candidate(rects, face_rect), face_rect, 50, 50)
         highlight_rect(image, mouth, color=(0,0,0), thickness=2)
 
-        cv2.imshow('Frame', image)
-        cv2.waitKey(1)
+        # cv2.imshow('Frame', image)
+        # cv2.waitKey(1)
 
         mouths = np.vstack((mouths, mouth))
 
