@@ -1,13 +1,21 @@
 import numpy as np
 from scipy.io import savemat
+import sys
 
 import cv2
+
+DEBUG = 0
 
 # Path to GRID corpus video data.
 DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
 
 TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
 #TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
+
+if len(sys.argv) == 2:
+    TEST_FN = sys.argv[1]
+
+print TEST_FN
 
 # Mouth detection cascade classifier.
 cc_mouth = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
@@ -109,10 +117,10 @@ if __name__ == "__main__":
         #print mouth_image.shape
         #mouths = np.concatenate((mouths, mouth_image), axis=0)
 
-
-        highlight_rect(image, mouth, color=(0,0,0), thickness=2)
-        cv2.imshow('Frame', mouth_image)
-        cv2.waitKey(1)
+	if DEBUG:
+	    highlight_rect(image, mouth, color=(0,0,0), thickness=2) 
+	    cv2.imshow('Frame', mouth_image)
+	    cv2.waitKey(1)
 
         rval, frame = vc.read()
 
