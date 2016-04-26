@@ -5,7 +5,8 @@ import cv2
 DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
 
 #TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
-TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
+# TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
+TEST_FN = "/mnt/hgfs/vm_shared/pgid4n.mpg"
 
 # Mouth detection cascade classifier.
 cc_mouth = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
