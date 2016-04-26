@@ -6,13 +6,20 @@ import numpy as np
 
 import cv2
 
+cc = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
+
+def rect_area(rect):
+    return (rect[2] - rect[0]) * (rect[3] - rect[1])
+
+def extract_lips(image):
+    rects = cc.detectMultiScale(image, minNeighbors=1)
+    return max(rects, key=rect_area)
+
 LIPS_PATH = "/Users/eric/Downloads/avletters/Lips"
 
 mouth_vids = []
 
-cc = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
 
-rect_area = lambda rect: (rect[2] - rect[0]) * (rect[3] - rect[1])
 
 for fname in os.listdir(LIPS_PATH):
     if fname.endswith(".mat"):
