@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     vc.release()
 
-    mouths = np.concatenate(mouth_images, axis=0)
+    mouths = np.asarray(mouth_images)
     print mouths
 
     savemat("mouths.mat", {"mouths": mouths})
