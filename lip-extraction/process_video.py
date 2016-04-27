@@ -9,8 +9,10 @@ DEBUG = 1
 # Path to GRID corpus video data.
 DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
 
-TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
+
+# TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
 #TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
+TEST_FN = "/mnt/hgfs/vm_shared/pgid4n.mpg"
 
 if len(sys.argv) == 2:
     TEST_FN = sys.argv[1]
@@ -113,10 +115,7 @@ if __name__ == "__main__":
         mouth = uniform_rect(select_mouth_candidate(rects, face_rect), face_rect, 50, 50)
 
         mouth_image = frame[mouth[1]:(mouth[1] + mouth[3]), mouth[0]:(mouth[0] + mouth[2]), :]
-        mouth_images.append(mouth_image)
-        #print mouths.shape
-        #print mouth_image.shape
-        #mouths = np.concatenate((mouths, mouth_image), axis=0)
+        mouth_images.append(mouth_image)        
 
 	if DEBUG:
 	    highlight_rect(image, mouth, color=(0,0,0), thickness=2) 
