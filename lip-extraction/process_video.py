@@ -83,7 +83,11 @@ def highlight_rect(image, rect, color=(125, 125, 25), thickness=1):
     return cv2.rectangle(image, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color, thickness)
 
 def process(in_path, out_path):
-     # Get video capture.
+    # Get video capture.
+
+    cap = skvideo.io.VideoCapture(sys.argv[1])
+    ret, frame = cap.read()
+
     vc = cv2.VideoCapture(in_path)    
 
     mouth_height = 50
@@ -134,12 +138,14 @@ def process_all(data_dir, skip=set()):
                 name = f_name.split('.')[0]
                 in_path = os.path.join(speaker_path, f_name)
                 out_path = os.path.join(speaker_path, name+'.mat')
-                process(in_path, out_path)        
+                process(in_path, out_path)       
+        break
 
 if __name__ == '__main__':
     skip = {}
     # skip = {'s%s'%i for i in xrange(1,13)}
-    process_all('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data', skip)
+    # process_all('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data', skip)
+    process('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data\\s1\\pbbc7a.mpg', 'pbbc7a.mat')
 
 
 
