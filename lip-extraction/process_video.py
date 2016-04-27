@@ -70,6 +70,8 @@ def uniform_rect(mouth, face, width, height):
 def locate_face(image, minNeighbors=5, scaleFactor=1.05):
     """ Returns the largest (by area) rectangle corresponding to a detected face. """
     rects = cc_face.detectMultiScale(image, scaleFactor=scaleFactor, minNeighbors=minNeighbors)
+    if not rects.any():
+        return np.empty(0)
     return max(rects, key=rect_area)
 
 def locate_mouth(image, minNeighbors=10, scaleFactor=1.05):
@@ -84,10 +86,6 @@ def highlight_rect(image, rect, color=(125, 125, 25), thickness=1):
 
 def process(in_path, out_path):
     # Get video capture.
-
-    cap = skvideo.io.VideoCapture(sys.argv[1])
-    ret, frame = cap.read()
-
     vc = cv2.VideoCapture(in_path)    
 
     mouth_height = 50
@@ -101,13 +99,17 @@ def process(in_path, out_path):
         mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
 
     while rval:
-        print 'looping'
         image = frame.copy()
 
         face_rect = locate_face(image)
-        highlight_rect(image, face_rect, color=(255,255,255), thickness=2)
+        if not face_rect.any():
+            print 'No face found for ', in_path
+            continue
+        if DEBUG:
+            highlight_rect(image, face_rect, color=(255,255,255), thickness=2)
 
         rects = locate_mouth(image)
+       
         mouth = uniform_rect(select_mouth_candidate(rects, face_rect), face_rect, 50, 50)
 
         mouth_image = frame[mouth[1]:(mouth[1] + mouth[3]), mouth[0]:(mouth[0] + mouth[2]), :]
@@ -142,12 +144,5 @@ def process_all(data_dir, skip=set()):
         break
 
 if __name__ == '__main__':
-    skip = {}
-    # skip = {'s%s'%i for i in xrange(1,13)}
-    # process_all('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data', skip)
-    process('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data\\s1\\pbbc7a.mpg', 'pbbc7a.mat')
-
-
-
-
-
+    skip = {'s%s'%i for i in xrange(2,11)}
+    process_all(sys.argv[1], skip)
