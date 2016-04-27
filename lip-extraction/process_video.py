@@ -1,10 +1,10 @@
 import numpy as np
 from scipy.io import savemat
-import sys
+import sys, os
 
 import cv2
 
-DEBUG = 1
+DEBUG = False
 
 # Path to GRID corpus video data.
 DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
@@ -13,11 +13,6 @@ DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
 # TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
 #TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
 TEST_FN = "/mnt/hgfs/vm_shared/pgid4n.mpg"
-
-if len(sys.argv) == 2:
-    TEST_FN = sys.argv[1]
-
-print TEST_FN
 
 # Mouth detection cascade classifier.
 cc_mouth = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
@@ -72,7 +67,6 @@ def uniform_rect(mouth, face, width, height):
 
     return [int(round(i)) for i in [rect_x, rect_y, width, height]]
 
-
 def locate_face(image, minNeighbors=5, scaleFactor=1.05):
     """ Returns the largest (by area) rectangle corresponding to a detected face. """
     rects = cc_face.detectMultiScale(image, scaleFactor=scaleFactor, minNeighbors=minNeighbors)
@@ -88,14 +82,12 @@ def highlight_rect(image, rect, color=(125, 125, 25), thickness=1):
     """ Highlights the given rectangle in the given image. """
     return cv2.rectangle(image, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color, thickness)
 
-if __name__ == "__main__":
-    # Get video capture.
-    vc = cv2.VideoCapture(TEST_FN)
-    #vc = cv2.VideoCapture(0)
+def process(in_path, out_path):
+     # Get video capture.
+    vc = cv2.VideoCapture(in_path)    
 
     mouth_height = 50
     mouth_width = 50
-
 
     rval, frame = vc.read() if vc.isOpened() else (False, None)
 
@@ -105,7 +97,7 @@ if __name__ == "__main__":
         mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
 
     while rval:
-    	print 'looping'
+        print 'looping'
         image = frame.copy()
 
         face_rect = locate_face(image)
@@ -117,17 +109,39 @@ if __name__ == "__main__":
         mouth_image = frame[mouth[1]:(mouth[1] + mouth[3]), mouth[0]:(mouth[0] + mouth[2]), :]
         mouth_images.append(mouth_image)        
 
-	if DEBUG:
-	    highlight_rect(image, mouth, color=(0,0,0), thickness=2) 
-	    cv2.imshow('Frame', mouth_image)
-	    cv2.waitKey(1)
+        if DEBUG:
+            highlight_rect(image, mouth, color=(0,0,0), thickness=2) 
+            cv2.imshow('Frame', mouth_image)
+            cv2.waitKey(1)
 
         rval, frame = vc.read()
 
     vc.release()
 
     mouths = np.asarray(mouth_images)
-    print mouths
 
-    savemat("mouths.mat", {"mouths": mouths})
+    savemat(out_path, {"mouths": mouths})
+
+
+def process_all(data_dir, skip=set()):
+    for speaker_dir in os.listdir(data_dir):
+        print 'current speaker: %s' % speaker_dir
+        speaker_path = os.path.join(data_dir, speaker_dir)
+        if speaker_dir in skip:
+            continue
+        for f_name in os.listdir(speaker_path):
+            if f_name.endswith('.mpg'):
+                name = f_name.split('.')[0]
+                in_path = os.path.join(speaker_path, f_name)
+                out_path = os.path.join(speaker_path, name+'.mat')
+                process(in_path, out_path)        
+
+if __name__ == '__main__':
+    skip = {}
+    # skip = {'s%s'%i for i in xrange(1,13)}
+    process_all('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data', skip)
+
+
+
+
 
