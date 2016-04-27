@@ -4,7 +4,7 @@ import sys
 
 import cv2
 
-DEBUG = 0
+DEBUG = 1
 
 # Path to GRID corpus video data.
 DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
@@ -103,6 +103,7 @@ if __name__ == "__main__":
         mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
 
     while rval:
+    	print 'looping'
         image = frame.copy()
 
         face_rect = locate_face(image)
