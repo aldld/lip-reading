@@ -157,5 +157,13 @@ def process_all(data_dir, include=set(), max_videos=np.inf, verbose=False):
     print "\nFinished processing %d videos." % num_processed
 
 if __name__ == '__main__':
-    include = {'s17', 's18'}
-    process_all(sys.argv[1], include, max_videos=(np.inf if len(sys.argv) < 3 else int(sys.argv[2])))
+    #include = {'s2'}
+    #if len(sys.argv) == 2:
+    video_path = '/ais/gobi4/freud/temp/data'
+    s, f = map(int, sys.argv[1].split(','))
+    include = {'s%s'%i for i in xrange(s,f+1)}
+    print 'processing ', include
+    process_all(video_path, include)
+    
+    #include = {'s17', 's18'}
+    #process_all(sys.argv[1], include, max_videos=(np.inf if len(sys.argv) < 3 else int(sys.argv[2])))
