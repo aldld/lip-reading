@@ -128,7 +128,7 @@ def process(in_path, out_path, mouth_height=50, mouth_width=50):
     savemat(out_path, {"mouths": mouths})
 
 
-def process_all(data_dir, include=set(), max_videos=np.inf):
+def process_all(data_dir, include=set(), max_videos=np.inf, verbose=False):
     num_processed = 0
 
     for speaker_dir in os.listdir(data_dir):
@@ -147,7 +147,8 @@ def process_all(data_dir, include=set(), max_videos=np.inf):
                 name = f_name.split('.')[0]
                 in_path = os.path.join(speaker_path, f_name)                
                 out_path = os.path.join(speaker_path, name+'.mat')
-                print f_name
+                if verbose:
+                    print f_name
                 process(in_path, out_path)        
                 num_processed += 1
 
@@ -161,3 +162,6 @@ if __name__ == '__main__':
     include = {'s%s'%i for i in xrange(s,f+1)}
     print 'processing ', include
     process_all(video_path, include)
+    
+    #include = {'s17', 's18'}
+    #process_all(sys.argv[1], include, max_videos=(np.inf if len(sys.argv) < 3 else int(sys.argv[2])))
