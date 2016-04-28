@@ -45,13 +45,10 @@ def train_word_durations(data, vocab):
 def gather_gmm_data(data, vocab):
     """ Returns a dictionary mapping words to their observation data matrices (of shape (num_segments, hogs_dim)) """
     # Collect segments for each word in training data.
-    segments = {}
+    segments = [{} for _ in vocab]
     for chain in data:
         for idx, word in enumerate(chain['state_seq']):
-            if word in segments.keys():
-                segments[word].add(chain['obs'][idx])
-            else:
-                segments[word] = {chain['obs'][idx]}
+            segments[word].add(chain['obs'][idx])
 
     # Put segments for each word together, so that each word has a single data matrix.
     train_data_gmm = {}
@@ -60,13 +57,17 @@ def gather_gmm_data(data, vocab):
 
     return train_data_gmm
 
-def train_word_gmms(train_data_gmm):
-    pass
+def train_word_gmms(train_data_gmm, n_components=6):
+    gmms = [GMM(n_components=n_components) for _ in train_data_gmm]
+    for idx, obs in enumerate(train_data_gmm):
+        gmms[idx].fit(obs)
+
+    return gmms
 
 def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms):
-    pass
+    return
 
-def train_hsmm(data):
+def train_hsmm(data, n_components=6):
     """ Trains a HSMM from the given complete data.
 
         data: Set of observation sequences and state sequences.
@@ -94,7 +95,7 @@ def train_hsmm(data):
     train_data_gmm = gather_gmm_data(data, vocab)
 
     # Train word GMMs.
-    word_gmms = train_word_gmms(train_data_gmm)
+    word_gmms = train_word_gmms(train_data_gmm, n_components=n_components)
 
     return build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms)
 
