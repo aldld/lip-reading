@@ -86,6 +86,8 @@ def process(in_path, out_path, mouth_height=50, mouth_width=50):
 
     if rval:
         mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
+    else:
+        return # Skip this video since CV2 can't open it
 
     frame_no = 0
     while rval:
