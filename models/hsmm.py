@@ -11,6 +11,10 @@ def train_word_init_probs(data, vocab_size):
     word_init_counts = np.zeros((vocab_size,))
 
     for chain in data:
+        """
+        print "===="
+        print chain
+        """
         if chain['state_seq'][0] in word_init_counts:
             word_init_counts[chain['state_seq'][0]] = 1
         else:
@@ -27,14 +31,16 @@ def train_word_trans_probs(data, vocab_size):
 
     num_bigrams_tot = 0
     for chain in data:
+        """
         print "====="
         print chain
         print "====="
+        """
         for w1, w2 in zip(chain["state_seq"][:-1], chain["state_seq"][1:]):
             bigram_counts[w1, w2] += 1
         num_bigrams_tot += len(chain["state_seq"]) - 1
 
-    print num_bigrams_tot
+    #print num_bigrams_tot
     return bigram_counts / float(num_bigrams_tot)
 
 def train_word_durations(data, vocab_size):

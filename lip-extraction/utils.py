@@ -8,9 +8,9 @@ vocab_mapping = {0: 'sil', 1: 'bin', 2: 'lay', 3: 'place', 4: 'set', 5: 'blue', 
     7: 'red', 8: 'white', 9: 'at', 10: 'by', 11: 'in', 12: 'with', 13: 'a', 14: 'b', 
     15: 'c', 16: 'd', 17: 'e', 18: 'f', 19: 'g', 20: 'h', 21: 'i', 22: 'j', 23: 'k', 
     24: 'l', 25: 'm', 26: 'n', 27: 'o', 28: 'p', 29: 'q', 30: 'r', 31: 's', 32: 't', 
-    33: 'u', 34: 'v', 35: 'x', 36: 'y', 37: 'z', 38: '0', 39: '1', 40: '2', 41: '3',
-    42: '4', 43: '5', 44: '6', 45: '7', 46: '8', 47: '9', 48: 'again', 49: 'now', 
-    50: 'please', 51: 'soon'}
+    33: 'u', 34: 'v', 35: 'x', 36: 'y', 37: 'z', 38: 'zero', 39: 'one', 40: 'two', 41: 'three',
+    42: 'four', 43: 'five', 44: 'six', 45: 'seven', 46: 'eight', 47: 'nine', 48: 'again', 49: 'now', 
+    50: 'please', 51: 'soon', 52: 'sp'}
 vocab_mapping_r = {word: i for i, word in vocab_mapping.items()} # Reverse mapping
 
 
@@ -51,19 +51,29 @@ def get_word_frame_nums(data_dir, file_out=None):
     return word_frame_nums
 
 
-def get_chain(hog_path, align_path, hog_flatten=False):
+def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False):
     """ 
     Returns the state, observation chain corresponding to given hog and align files.
     """
     hogs = loadmat(hog_path)['hogs']
     alignments = read_align(align_path)
     chain = defaultdict(list)
+
+    chain['speaker'] = speaker
+    chain['hog_fn'] = hog_fn
+
     for a in alignments:
         observed_hogs = hogs[a[0]:a[1],]
+
         if hog_flatten:
+            if observed_hogs.size == 0:
+                continue
+
             observed_hogs = observed_hogs.reshape((observed_hogs.shape[0], -1))
-        chain['state_seq'].append(a[2])
+            #observed_hogs = observed_hogs.flatten()
+        chain['state_seq'].append(vocab_mapping_r[a[2]])
         chain['obs'].append(observed_hogs)
+
     return chain
 
 
@@ -97,7 +107,7 @@ def get_data(data_dir, hog_flatten=False, speakers=None):
             align_file = hog_file.split('.')[0] + '.align'
             hog_path = os.path.join(hog_dir, hog_file)
             align_path = os.path.join(align_dir, align_file)
-            chain = get_chain(hog_path, align_path, hog_flatten)
+            chain = get_chain(hog_path, align_path, speaker_id, hog_file, hog_flatten)
             data.append(chain)
 
     np.random.shuffle(data)
