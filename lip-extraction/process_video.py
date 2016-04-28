@@ -128,11 +128,11 @@ def process(in_path, out_path, mouth_height=50, mouth_width=50):
     savemat(out_path, {"mouths": mouths})
 
 
-def process_all(data_dir, skip=set()):
+def process_all(data_dir, include=set()):
     for speaker_dir in os.listdir(data_dir):
         speaker_path = os.path.join(data_dir, speaker_dir)
 
-        if speaker_dir in skip or not os.path.isdir(speaker_path):
+        if not speaker_dir in include or not os.path.isdir(speaker_path):
             continue
 
         print 'current speaker: %s' % speaker_dir
@@ -140,11 +140,11 @@ def process_all(data_dir, skip=set()):
         for f_name in os.listdir(speaker_path):
             if f_name.endswith('.mpg'):
                 name = f_name.split('.')[0]
-                in_path = os.path.join(speaker_path, f_name)
+                in_path = os.path.join(speaker_path, f_name)                
                 out_path = os.path.join(speaker_path, name+'.mat')
-                print f_name
                 process(in_path, out_path)        
 
 if __name__ == '__main__':
-    skip = {'s%s'%i for i in xrange(2,11)}
-    process_all(sys.argv[1], skip)
+    #skip = {'s%s'%i for i in xrange(2,11)}
+    include = {'s17', 's18'}
+    process_all(sys.argv[1], include)
