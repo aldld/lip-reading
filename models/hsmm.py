@@ -8,6 +8,7 @@ import pyhsmm
 import cPickle as pickle
 
 def train_word_init_probs(data, vocab_size):
+    """ Compute initial word probabilities. """
     word_init_counts = np.zeros((vocab_size,))
 
     for chain in data:
@@ -55,13 +56,12 @@ def gather_gmm_data(data, vocab_size):
     # Put segments for each word together, so that each word has a single data matrix.
     train_data_gmm = [None for _ in xrange(vocab_size)]
     for word in xrange(vocab_size):
-        #print segments[word][0].shape
-        #exit()
         train_data_gmm[word] = np.vstack((np.asarray(seg) for seg in segments[word]))
 
     return train_data_gmm
 
 def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
+    """ Train word-level GMMs given the current word. """
     gmms = [GMM(n_components=n_components) for _ in train_data_gmm]
 
     for idx, obs in enumerate(train_data_gmm):
@@ -72,9 +72,41 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
 
     return gmms
 
-def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms):
-    # TODO: Build pyhsmm HSMM from estimated parameters.
-    return
+def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size):
+    """ Build pyhsmm HSMM from estimated parameters. """
+
+    # Build observation GMM distributions.
+    obs_distns = []
+    for sk_gmm in word_gmms:
+        weights = sk_gmm.weights_
+        means = sk_gmm.means_
+        covars = sk_gmm.covars_
+
+        # Construct individual Gaussian mixture components.
+        mix_components = []
+        for i in xrange(sk_gmm.n_components):
+            sigma = np.diag(covars[i, :]) # TODO: Assumes diagonal covariance.
+            gaussian = pyhsmm.models.Gaussian(mu=means[i, :], sigma=sigma)
+
+            mix_components.append(gaussian)
+
+        obs_gmm = pyhsmm.models.Mixture(components=mix_components, weights=weights)
+
+        obs_distns.append(obs_gmm)
+
+    # Build duration Poisson distributions.
+    dur_distns = []
+    for lmbda in word_dur_params:
+        poisson_duration = pyhsmm.distributions.PoissonDuration(lmbda=lmbda)
+
+        dur_distns.append(poisson_duration)
+
+
+    hsmm = hsmm.models.HSMM(obs_distns=obs_distns, dur_distns=dur_distns)
+    hsmm.trans_distn.trans_matrix = word_trans_probs
+    hsmm.init_state_distn.weights = word_init_probs
+
+    return hsmm
 
 def save_params(word_init_probs, word_trans_probs, word_dur_params, word_gmms, out_file):
     params = {
@@ -127,7 +159,7 @@ def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True):
         # Save intermediate model, if so desired.
         save_params(word_init_probs, word_trans_probs, word_dur_params, word_gmms, pkl_param)
 
-    return build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms)
+    return build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size)
 
 
 
