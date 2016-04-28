@@ -1,11 +1,11 @@
 function [] = get_hogs2(data_dir)
-    speakers = dir([data_dir 's*']);
+    speakers = dir(data_dir)
     
-    parfor j = 1:numel(speakers)
+    for j = 1:numel(speakers)
         lip_folder = speakers(j).name;
-        lip_folder_path = [data_dir lip_folder];
-        hog_folder_path = [lip_folder_path 'hog'];
-        folder_helper();
+        lip_folder_path = [data_dir lip_folder filesep];
+        hog_folder_path = [lip_folder_path 'hog' filesep];
+        folder_helper(lip_folder_path, hog_folder_path);
     end
 
 end
