@@ -56,6 +56,8 @@ def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False):
     Returns the state, observation chain corresponding to given hog and align files.
     """
     hogs = loadmat(hog_path)['hogs']
+    if not hogs.size:
+        return None
     alignments = read_align(align_path)
     chain = defaultdict(list)
 
@@ -67,17 +69,17 @@ def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False):
 
         if hog_flatten:
             if observed_hogs.size == 0:
+                # This is mainly for 'sp' observations that are less than a frame long
                 continue
 
             observed_hogs = observed_hogs.reshape((observed_hogs.shape[0], -1))
-            #observed_hogs = observed_hogs.flatten()
         chain['state_seq'].append(vocab_mapping_r[a[2]])
         chain['obs'].append(observed_hogs)
 
     return chain
 
 
-def get_data(data_dir, hog_flatten=False, speakers=None):
+def get_data(data_dir, hog_flatten=False, speakers=None, verbose=True):
     """
     For each speaker under data_dir, combines and returns chains from corresponding
     hog and align files.
@@ -90,7 +92,6 @@ def get_data(data_dir, hog_flatten=False, speakers=None):
         if (not os.path.isdir(speaker_path)) or (speakers is not None and speaker_id not in speakers):
             continue
 
-
         align_dir = os.path.join(speaker_path, 'align')
         if not os.path.exists(align_dir):
             print 'align directory %s does not exist' % align_dir
@@ -102,12 +103,14 @@ def get_data(data_dir, hog_flatten=False, speakers=None):
         for hog_file in os.listdir(hog_dir):
             if not hog_file.endswith('.mat'):
                 continue
-
-            print hog_file
+            if verbose:
+                print hog_file
             align_file = hog_file.split('.')[0] + '.align'
             hog_path = os.path.join(hog_dir, hog_file)
             align_path = os.path.join(align_dir, align_file)
             chain = get_chain(hog_path, align_path, speaker_id, hog_file, hog_flatten)
+            if not chain:
+                continue
             data.append(chain)
 
     np.random.shuffle(data)
