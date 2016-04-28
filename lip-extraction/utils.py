@@ -77,7 +77,7 @@ def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False):
     return chain
 
 
-def get_data(data_dir, hog_flatten=False, speakers=None):
+def get_data(data_dir, hog_flatten=False, speakers=None, verbose=True):
     """
     For each speaker under data_dir, combines and returns chains from corresponding
     hog and align files.
@@ -101,8 +101,8 @@ def get_data(data_dir, hog_flatten=False, speakers=None):
         for hog_file in os.listdir(hog_dir):
             if not hog_file.endswith('.mat'):
                 continue
-
-            print hog_file
+            if verbose:
+                print hog_file
             align_file = hog_file.split('.')[0] + '.align'
             hog_path = os.path.join(hog_dir, hog_file)
             align_path = os.path.join(align_dir, align_file)
