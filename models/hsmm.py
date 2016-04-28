@@ -103,7 +103,7 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
         dur_distns.append(poisson_duration)
 
 
-    hsmm = pyhsmm.models.HSMM(obs_distns=obs_distns, dur_distns=dur_distns)
+    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns)
     hsmm.trans_distn.trans_matrix = word_trans_probs
     hsmm.init_state_distn.weights = word_init_probs
 
