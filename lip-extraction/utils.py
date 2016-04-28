@@ -67,7 +67,7 @@ def get_chain(hog_path, align_path, hog_flatten=False):
     return chain
 
 
-def get_data(data_dir, hog_flatten=False):
+def get_data(data_dir, include=set(), hog_flatten=False):
     """
     For each speaker under data_dir, combines and returns chains from corresponding
     hog and align files.
@@ -75,6 +75,8 @@ def get_data(data_dir, hog_flatten=False):
     data = []
 
     for speaker_id in os.listdir(data_dir):
+        if include and not speaker_id in include:
+            continue
         speaker_path = os.path.join(data_dir, speaker_id)
         align_dir = os.path.join(speaker_path, 'align')
         if not os.path.exists(align_dir):
