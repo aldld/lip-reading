@@ -6,14 +6,6 @@ import cv2
 
 DEBUG = False
 
-# Path to GRID corpus video data.
-DATA_DIR = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video"
-
-
-# TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/bwbg8n.mpg"
-#TEST_FN = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/video/s1/pgid4n.mpg"
-TEST_FN = "/mnt/hgfs/vm_shared/pgid4n.mpg"
-
 # Mouth detection cascade classifier.
 cc_mouth = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
 cc_face = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -56,9 +48,10 @@ def select_mouth_candidate(candidates, face, delta=0.3):
 def uniform_rect(mouth, face, width, height):
     """ Returns a rectangle with the given width and height, centred as closely as possible to the centre of the mouth,
         shifted upwards so as to lie completely within the face. """
-    mc_x, mc_y = mouth[0] + 0.5 * mouth[2], mouth[1] + 0.5 * mouth[3] # Mouth center point.
+    if mouth is None:
+        return None
 
-    #rect_y = mc_y - 0.5 * height
+    mc_x, mc_y = mouth[0] + 0.5 * mouth[2], mouth[1] + 0.5 * mouth[3] # Mouth center point.
 
     rect_bottom = mc_y + 0.5 * height
 
@@ -70,26 +63,22 @@ def uniform_rect(mouth, face, width, height):
 def locate_face(image, minNeighbors=5, scaleFactor=1.05):
     """ Returns the largest (by area) rectangle corresponding to a detected face. """
     rects = cc_face.detectMultiScale(image, scaleFactor=scaleFactor, minNeighbors=minNeighbors)
-    if not rects.any():
-        return np.empty(0)
     return max(rects, key=rect_area)
 
 def locate_mouth(image, minNeighbors=10, scaleFactor=1.05):
     """ Returns a list of candidate rectangles found by the mouth detector. """
     rects = cc_mouth.detectMultiScale(image, scaleFactor=scaleFactor, minNeighbors=minNeighbors)
-    #return max(rects, key=rect_area)
     return rects
 
 def highlight_rect(image, rect, color=(125, 125, 25), thickness=1):
     """ Highlights the given rectangle in the given image. """
     return cv2.rectangle(image, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color, thickness)
 
-def process(in_path, out_path):
-    # Get video capture.
+def process(in_path, out_path, mouth_height=50, mouth_width=50):
+    """ Processes the video file given by in_path, outputting a .mat file at out_path containing the regions of the
+        frames of the original video featuring the speaker's mouth. """
+    # Get video capture from in_path.
     vc = cv2.VideoCapture(in_path)    
-
-    mouth_height = 50
-    mouth_width = 50
 
     rval, frame = vc.read() if vc.isOpened() else (False, None)
 
@@ -98,19 +87,28 @@ def process(in_path, out_path):
     if rval:
         mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
 
+    frame_no = 0
     while rval:
-        image = frame.copy()
+        if DEBUG:
+            # Copy of original frame, for annotating.
+            image = frame.copy()
 
-        face_rect = locate_face(image)
-        if not face_rect.any():
-            print 'No face found for ', in_path
-            continue
+        try:
+            face_rect = locate_face(frame)
+        except ValueError:
+            print "No face found for %s at frame %d. Skipping." % (in_path, frame_no)
+            vc.release()
+            return # Skip this video.
+
         if DEBUG:
             highlight_rect(image, face_rect, color=(255,255,255), thickness=2)
 
-        rects = locate_mouth(image)
-       
-        mouth = uniform_rect(select_mouth_candidate(rects, face_rect), face_rect, 50, 50)
+        mouth_rects = locate_mouth(frame)
+        mouth = uniform_rect(select_mouth_candidate(mouth_rects, face_rect), face_rect, 50, 50)
+        if not mouth:
+            print "No face found for %s at frame %d. Skipping." % (in_path, frame_no)
+            vc.release()
+            return # Skip this video.
 
         mouth_image = frame[mouth[1]:(mouth[1] + mouth[3]), mouth[0]:(mouth[0] + mouth[2]), :]
         mouth_images.append(mouth_image)        
@@ -121,6 +119,7 @@ def process(in_path, out_path):
             cv2.waitKey(1)
 
         rval, frame = vc.read()
+        frame_no += 1
 
     vc.release()
 
@@ -129,20 +128,30 @@ def process(in_path, out_path):
     savemat(out_path, {"mouths": mouths})
 
 
-def process_all(data_dir, skip=set()):
+def process_all(data_dir, skip=set(), max_videos=np.inf):
+    num_processed = 0
+
     for speaker_dir in os.listdir(data_dir):
-        print 'current speaker: %s' % speaker_dir
         speaker_path = os.path.join(data_dir, speaker_dir)
-        if speaker_dir in skip:
+
+        if speaker_dir in skip or not os.path.isdir(speaker_path):
             continue
+
+        print 'current speaker: %s' % speaker_dir
+
         for f_name in os.listdir(speaker_path):
             if f_name.endswith('.mpg'):
+                if num_processed >= max_videos:
+                    return
+
                 name = f_name.split('.')[0]
                 in_path = os.path.join(speaker_path, f_name)
                 out_path = os.path.join(speaker_path, name+'.mat')
-                process(in_path, out_path)       
-        break
+                process(in_path, out_path)        
+                num_processed += 1
+
+    print "\nFinished processing %d videos." % num_processed
 
 if __name__ == '__main__':
     skip = {'s%s'%i for i in xrange(2,11)}
-    process_all(sys.argv[1], skip)
+    process_all(sys.argv[1], skip, max_videos=(np.inf if len(sys.argv) < 3 else int(sys.argv[2])))
