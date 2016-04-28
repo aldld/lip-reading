@@ -85,6 +85,8 @@ def get_data(data_dir, hog_flatten=False):
             chain = get_chain(hog_path, align_path, hog_flatten)
             data.add(chain)
 
+    return data
+
 
 if __name__ == '__main__':
     import sys
