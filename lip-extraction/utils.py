@@ -56,6 +56,8 @@ def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False):
     Returns the state, observation chain corresponding to given hog and align files.
     """
     hogs = loadmat(hog_path)['hogs']
+    if not hogs.size:
+        return None
     alignments = read_align(align_path)
     chain = defaultdict(list)
 
@@ -107,6 +109,8 @@ def get_data(data_dir, hog_flatten=False, speakers=None, verbose=True):
             hog_path = os.path.join(hog_dir, hog_file)
             align_path = os.path.join(align_dir, align_file)
             chain = get_chain(hog_path, align_path, speaker_id, hog_file, hog_flatten)
+            if not chain:
+                continue
             data.append(chain)
 
     np.random.shuffle(data)
