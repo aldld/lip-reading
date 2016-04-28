@@ -72,19 +72,27 @@ def get_data(data_dir, hog_flatten=False):
     For each speaker under data_dir, combines and returns chains from corresponding
     hog and align files.
     """
-    data = set()
+    data = []
 
     for speaker_id in os.listdir(data_dir):
         speaker_path = os.path.join(data_dir, speaker_id)
         align_dir = os.path.join(speaker_path, 'align')
+        if not os.path.exists(align_dir):
+            print 'align directory %s does not exist' % align_dir
+            continue
         hog_dir = os.path.join(speaker_path, 'hog')
+        if not os.path.exists(hog_dir):
+            print 'hog directory %s does not exist' % hog_dir
+            continue
         for hog_file in os.listdir(hog_dir):
+            print hog_file
             align_file = hog_file.split('.')[0] + '.align'
             hog_path = os.path.join(hog_dir, hog_file)
             align_path = os.path.join(align_dir, align_file)
             chain = get_chain(hog_path, align_path, hog_flatten)
-            data.add(chain)
+            data.append(chain)
 
+    np.random.shuffle(data)
     return data
 
 
@@ -94,4 +102,6 @@ if __name__ == '__main__':
         chain = get_chain(sys.argv[1], sys.argv[2])   
         import pdb; pdb.set_trace()
     else:
-        print get_word_frame_nums('C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data').keys()
+        data_dir = 'C:\\Users\\Berkay Antmen\\Desktop\\412Final\\data'
+        # print get_word_frame_nums(data_dir).keys()
+        print get_data(data_dir)
