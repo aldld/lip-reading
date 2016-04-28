@@ -87,7 +87,6 @@ def get_data(data_dir, include=set(), hog_flatten=False):
             print 'hog directory %s does not exist' % hog_dir
             continue
         for hog_file in os.listdir(hog_dir):
-            print hog_file
             align_file = hog_file.split('.')[0] + '.align'
             hog_path = os.path.join(hog_dir, hog_file)
             align_path = os.path.join(align_dir, align_file)
