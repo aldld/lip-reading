@@ -72,7 +72,7 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
 
     return gmms
 
-def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size):
+def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size, out_fn=None):
     """ Build pyhsmm HSMM from estimated parameters. """
 
     # Build observation GMM distributions.
@@ -86,7 +86,7 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
         mix_components = []
         for i in xrange(sk_gmm.n_components):
             sigma = np.diag(covars[i, :]) # TODO: Assumes diagonal covariance.
-            gaussian = pyhsmm.models.Gaussian(mu=means[i, :], sigma=sigma)
+            gaussian = pyhsmm.distributions.Gaussian(mu=means[i, :], sigma=sigma)
 
             mix_components.append(gaussian)
 
@@ -105,6 +105,10 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
     hsmm = hsmm.models.HSMM(obs_distns=obs_distns, dur_distns=dur_distns)
     hsmm.trans_distn.trans_matrix = word_trans_probs
     hsmm.init_state_distn.weights = word_init_probs
+
+    if out_fn is not None:
+        with open(out_fn, "wb") as f:
+            pickle.dump(hsmm, f)
 
     return hsmm
 
