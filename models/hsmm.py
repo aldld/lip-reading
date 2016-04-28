@@ -4,6 +4,7 @@ from scipy.io import loadmat
 
 from sklearn.mixture import GMM
 import pyhsmm
+import pybasicbayes
 
 import cPickle as pickle
 
@@ -90,7 +91,7 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
 
             mix_components.append(gaussian)
 
-        obs_gmm = pyhsmm.models.Mixture(components=mix_components, weights=weights)
+        obs_gmm = pybasicbayes.models.MixtureDistribution(components=mix_components, weights=weights)
 
         obs_distns.append(obs_gmm)
 
