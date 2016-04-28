@@ -128,7 +128,9 @@ def process(in_path, out_path, mouth_height=50, mouth_width=50):
     savemat(out_path, {"mouths": mouths})
 
 
-def process_all(data_dir, include=set()):
+def process_all(data_dir, include=set(), max_videos=np.inf):
+    num_processed = 0
+
     for speaker_dir in os.listdir(data_dir):
         speaker_path = os.path.join(data_dir, speaker_dir)
 
@@ -136,15 +138,21 @@ def process_all(data_dir, include=set()):
             continue
 
         print 'current speaker: %s' % speaker_dir
-        
+
         for f_name in os.listdir(speaker_path):
             if f_name.endswith('.mpg'):
+                if num_processed >= max_videos:
+                    return
+
                 name = f_name.split('.')[0]
                 in_path = os.path.join(speaker_path, f_name)                
                 out_path = os.path.join(speaker_path, name+'.mat')
+                print f_name
                 process(in_path, out_path)        
+                num_processed += 1
+
+    print "\nFinished processing %d videos." % num_processed
 
 if __name__ == '__main__':
-    #skip = {'s%s'%i for i in xrange(2,11)}
     include = {'s17', 's18'}
-    process_all(sys.argv[1], include)
+    process_all(sys.argv[1], include, max_videos=(np.inf if len(sys.argv) < 3 else int(sys.argv[2])))
