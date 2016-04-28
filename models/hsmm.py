@@ -11,36 +11,23 @@ def train_word_init_probs(data, vocab_size):
     word_init_counts = np.zeros((vocab_size,))
 
     for chain in data:
-        """
-        print "===="
-        print chain
-        """
         if chain['state_seq'][0] in word_init_counts:
             word_init_counts[chain['state_seq'][0]] = 1
         else:
             word_init_counts[chain['state_seq'][0]] += 1
 
-    #return {word: float(count) / len(vocab) for word, count in word_init_counts}
     return word_init_counts / float(vocab_size)
 
 def train_word_trans_probs(data, vocab_size):
     """ Return the HSMM state transition matrix trained using MLE from bigram counts. """
     bigram_counts = np.zeros((vocab_size, vocab_size))
 
-    print data
-
     num_bigrams_tot = 0
     for chain in data:
-        """
-        print "====="
-        print chain
-        print "====="
-        """
         for w1, w2 in zip(chain["state_seq"][:-1], chain["state_seq"][1:]):
             bigram_counts[w1, w2] += 1
         num_bigrams_tot += len(chain["state_seq"]) - 1
 
-    #print num_bigrams_tot
     return bigram_counts / float(num_bigrams_tot)
 
 def train_word_durations(data, vocab_size):
@@ -60,15 +47,17 @@ def train_word_durations(data, vocab_size):
 def gather_gmm_data(data, vocab_size):
     """ Returns a dictionary mapping words to their observation data matrices (of shape (num_segments, hogs_dim)) """
     # Collect segments for each word in training data.
-    segments = [{} for _ in xrange(vocab_size)]
+    segments = [[] for _ in xrange(vocab_size)]
     for chain in data:
         for idx, word in enumerate(chain['state_seq']):
-            segments[word].add(chain['obs'][idx])
+            segments[word].append(chain['obs'][idx])
 
     # Put segments for each word together, so that each word has a single data matrix.
     train_data_gmm = [None for _ in xrange(vocab_size)]
     for word in xrange(vocab_size):
-        train_data_gmm[word] = np.vstack((np.asarray(seg) for seg in segments[word])).T
+        #print segments[word][0].shape
+        #exit()
+        train_data_gmm[word] = np.vstack((np.asarray(seg) for seg in segments[word]))
 
     return train_data_gmm
 
@@ -78,6 +67,7 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
     for idx, obs in enumerate(train_data_gmm):
         if verbose:
             print "Training GMM for word %d" % idx
+            #print obs.shape
         gmms[idx].fit(obs)
 
     return gmms
