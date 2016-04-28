@@ -61,7 +61,7 @@ def get_chain(hog_path, align_path, hog_flatten=False):
     for a in alignments:
         observed_hogs = hogs[a[0]:a[1],]
         if hog_flatten:
-            observed_hogs = segment_hogs.reshape((segment_hogs.shape[0], -1))
+            observed_hogs = observed_hogs.reshape((observed_hogs.shape[0], -1))
         chain['state_seq'].append(a[2])
         chain['obs'].append(observed_hogs)
     return chain
