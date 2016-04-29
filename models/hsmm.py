@@ -81,7 +81,7 @@ class FixedHSMMInitialState(pyhsmm.internals.initial_state.HSMMInitialState):
     def resample(self, data=[]):
         return self
 
-class FixedHSMMTransitions(pyhsmm.transitions.HSMMTransitions):
+class FixedHSMMTransitions(pyhsmm.internals.transitions.HSMMTransitions):
     def resample(self,stateseqs=[],trans_counts=None):
         return self
 
