@@ -73,6 +73,10 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
 
     return gmms
 
+class FixedGaussian(pyhsmm.distributions.Gaussian):
+    def resample(self, data=[]):
+        return self
+
 def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size, out_fn=None, eps=0.0001):
     """ Build pyhsmm HSMM from estimated parameters. """
 
@@ -87,7 +91,11 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
         mix_components = []
         for i in xrange(sk_gmm.n_components):
             sigma = np.diag(covars[i, :]) # TODO: Assumes diagonal covariance.
-            gaussian = pyhsmm.distributions.Gaussian(mu=means[i, :], sigma=sigma)
+
+            #mu_0 = means[i, :]
+
+
+            gaussian = FixedGaussian(mu=means[i, :], sigma=sigma)
 
             mix_components.append(gaussian)
 
