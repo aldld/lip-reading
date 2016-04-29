@@ -3,6 +3,7 @@ import numpy as np
 from scipy.io import loadmat
 from collections import defaultdict
 import os
+import cPickle as pickle
 
 vocab_mapping = {0: 'sil', 1: 'bin', 2: 'lay', 3: 'place', 4: 'set', 5: 'blue', 6: 'green', 
     7: 'red', 8: 'white', 9: 'at', 10: 'by', 11: 'in', 12: 'with', 13: 'a', 14: 'b', 
@@ -17,10 +18,6 @@ entire_set = {'s%s'%i for i in xrange(1,35) if i!=21}
 test_set = {'s%s'%i for i in xrange(28,35)}
 train_set = entire_set - test_set
 entire_set, test_set, train_set = list(entire_set), list(test_set), list(train_set)
-
-
-def inf_to_voc(inf):
-    return [vocab_mapping[i] for i in inf]
 
 
 def read_align(align_path, rounded=True):
@@ -63,33 +60,45 @@ def get_word_frame_nums(data_dir, file_out=None):
     return word_frame_nums
 
 
-def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False):
+def get_chain(hog_path, align_path, speaker, hog_fn, hog_flatten=False, return_gt=False):
     """ 
     Returns the state, observation chain corresponding to given hog and align files.
     """
     hogs = loadmat(hog_path)['hogs']
     if not hogs.size:
-        return None
+        if not return_gt:           
+            return None
+        else:
+            return None, None
     alignments = read_align(align_path)
     chain = defaultdict(list)
 
     chain['speaker'] = speaker
     chain['hog_fn'] = hog_fn
 
+    if return_gt:
+        gt = []
+
     for a in alignments:
         observed_hogs = hogs[a[0]:a[1],]
-
-        if hog_flatten:
-            if observed_hogs.size == 0:
-                # This is mainly for 'sp' observations that are less than a frame long
+        
+        # This is mainly for 'sp' observations that are less than a frame long
+        if observed_hogs.size == 0:
                 continue
-
+        
+        if hog_flatten:
             observed_hogs = observed_hogs.reshape((observed_hogs.shape[0], -1))
+
         chain['state_seq'].append(vocab_mapping_r[a[2]])
         chain['obs'].append(observed_hogs)
 
-    return chain
-
+        if return_gt:
+            gt.extend([vocab_mapping_r[a[2]]] * (a[1]-a[0]))
+    
+    if not return_gt:
+        return chain
+    else:
+        return chain, gt
 
 def get_data(data_dir, hog_flatten=False, speakers=None, verbose=True):
     """
