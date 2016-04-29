@@ -119,6 +119,7 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
     hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns)
     hsmm.trans_distn.trans_matrix = word_trans_probs
     hsmm.init_state_distn.weights = word_init_probs
+    hsmm.init_state_distn.K = vocab_size
 
     if out_fn is not None:
         with open(out_fn, "wb") as f:
