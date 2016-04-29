@@ -77,7 +77,7 @@ class FixedGaussian(pyhsmm.distributions.Gaussian):
     def resample(self, data=[]):
         return self
 
-class FixedHSMMInitialState(pyhsmm.initial_state.HSMMInitialState):
+class FixedHSMMInitialState(pyhsmm.internals.initial_state.HSMMInitialState):
     def resample(self, data=[]):
         return self
 
