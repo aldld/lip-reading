@@ -4,7 +4,7 @@ import sys, os
 
 import cv2
 
-DEBUG = False
+DEBUG = True
 
 # Mouth detection cascade classifier.
 cc_mouth = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
@@ -74,9 +74,12 @@ def highlight_rect(image, rect, color=(125, 125, 25), thickness=1):
     """ Highlights the given rectangle in the given image. """
     return cv2.rectangle(image, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color, thickness)
 
-def process(in_path, out_path, mouth_height=50, mouth_width=50):
+def process(in_path, out_path, mouth_height=50, mouth_width=50, frame_dur=1, capture_frame=None, out_img=None, show_boxes=True):
     """ Processes the video file given by in_path, outputting a .mat file at out_path containing the regions of the
-        frames of the original video featuring the speaker's mouth. """
+        frames of the original video featuring the speaker's mouth.
+
+        TODO: Refactor this method.
+    """
     # Get video capture from in_path.
     vc = cv2.VideoCapture(in_path)    
 
@@ -84,7 +87,7 @@ def process(in_path, out_path, mouth_height=50, mouth_width=50):
 
     mouth_images = []
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
     if rval:
         mouths = np.empty((0, mouth_height, mouth_width, frame.shape[2]))
@@ -119,8 +122,14 @@ def process(in_path, out_path, mouth_height=50, mouth_width=50):
 
         if DEBUG:
             highlight_rect(image, mouth, color=(0,0,0), thickness=2) 
-            cv2.imshow('Frame', mouth_image)
-            cv2.waitKey(1)
+            #cv2.imshow('Frame', mouth_image)
+            cv2.imshow('Frame', image if show_boxes else frame)
+
+            if frame_no == capture_frame:
+                cv2.imwrite(out_img, image if show_boxes else frame)
+                return
+
+            cv2.waitKey(frame_dur)
 
         rval, frame = vc.read()
         frame_no += 1
@@ -159,6 +168,21 @@ def process_all(data_dir, include=set(), max_videos=np.inf, verbose=False):
     print "\nFinished processing %d videos." % num_processed
 
 if __name__ == '__main__':
+    # Generate images for paper.
+    if len(sys.argv) == 2 and sys.argv[1] == "gen_imgs":
+        vid1 = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/s1/video/pgak5a.mpg"
+        vid2 = "/Users/eric/Programming/prog_crs/lip-reading/data/grid/s4/video/bbbf3n.mpg"
+
+        out_file = "/Users/eric/temp/vid"
+
+        process(vid1, out_file, frame_dur=1, capture_frame=7, out_img="s1.jpg", show_boxes=False)
+        process(vid2, out_file, frame_dur=1, capture_frame=11, out_img="s4.jpg", show_boxes=False)
+
+        process(vid1, out_file, frame_dur=1, capture_frame=7, out_img="s1_boxes.jpg", show_boxes=True)
+        process(vid2, out_file, frame_dur=1, capture_frame=11, out_img="s4_boxes.jpg", show_boxes=True)
+
+        exit()
+
     #include = {'s2'}
     #if len(sys.argv) == 2:
     video_path = '/ais/gobi4/freud/temp/data'
