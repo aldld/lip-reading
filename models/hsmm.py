@@ -10,6 +10,9 @@ import cPickle as pickle
 
 import multiprocessing
 
+import importlib
+utils = importlib.import_module("..lip-extraction.utils") # Import with "-"
+
 def train_word_init_probs(data, vocab_size):
     """ Compute initial word probabilities. """
     word_init_counts = np.zeros((vocab_size,))
@@ -77,7 +80,16 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=Fals
             if verbose:
                 print "Training GMM for word %d" % idx
                 #print obs.shape
-            gmms[idx].fit(obs)
+
+            if idx == vocab_mapping_r["sil2"]:
+                continue
+            elif idx == vocab_mapping_r["sil"]
+                sil_obs = np.vstack((train_data_gmm[idx], train_data_gmm[vocab_mapping_r["sil2"]]))
+                gmms[idx].fit(sil_obs)
+            else:
+                gmms[idx].fit(obs)
+
+        gmms[vocab_mapping_r["sil2"]] = gmms[vocab_mapping_r["sil"]]
 
     return gmms
 
