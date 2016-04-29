@@ -154,7 +154,7 @@ def save_params(word_init_probs, word_trans_probs, word_dur_params, word_gmms, o
     with open(out_file, "wb") as f:
         pickle.dump(params, f)
 
-def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True):
+def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True, parallel=False):
     """ Trains a HSMM from the given complete data.
 
         data: List of observation sequences and state sequences.
@@ -188,7 +188,7 @@ def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True):
     # Train word GMMs.
     if verbose:
         print "Training GMMs..."
-    word_gmms = train_word_gmms(train_data_gmm, n_components=n_components, verbose=verbose)
+    word_gmms = train_word_gmms(train_data_gmm, n_components=n_components, verbose=verbose, parallel=parallel)
 
     if pkl_param is not None:
         # Save intermediate model, if so desired.
