@@ -73,7 +73,7 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
 
     return gmms
 
-def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size, out_fn=None):
+def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size, out_fn=None, eps=0.0001):
     """ Build pyhsmm HSMM from estimated parameters. """
 
     # Build observation GMM distributions.
@@ -98,7 +98,12 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
     # Build duration Poisson distributions.
     dur_distns = []
     for lmbda in word_dur_params:
-        poisson_duration = pyhsmm.distributions.PoissonDuration(lmbda=lmbda)
+        # Need to choose hyperparameters b/c reasons. This will constrain the prior distribution of lambda so that
+        # the mean is equal to lambda and the variance is less than eps.
+        beta_0 = lmbda / float(eps)
+        alpha_0 = lmbda * beta_0
+
+        poisson_duration = pyhsmm.distributions.PoissonDuration(lmbda=lmbda, alpha_0=alpha_0, beta_0=beta_0)
 
         dur_distns.append(poisson_duration)
 
