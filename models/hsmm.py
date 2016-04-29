@@ -119,11 +119,12 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
 
         dur_distns.append(poisson_duration)
 
-    int_state_distn = FixedHSMMInitialState(model=hsmm, pi_0=word_init_probs)
+    #int_state_distn = FixedHSMMInitialState(model=hsmm, pi_0=word_init_probs)
 
-    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns, int_state_distn=int_state_distn)
+    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns)
     hsmm.trans_distn.trans_matrix = word_trans_probs
-    #hsmm.init_state_distn.weights = word_init_probs
+
+    hsmm.init_state_distn = FixedHSMMInitialState(model=hsmm, pi_0=word_init_probs)
     hsmm.init_state_distn.K = vocab_size
 
     if out_fn is not None:
