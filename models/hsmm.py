@@ -11,7 +11,7 @@ import cPickle as pickle
 import multiprocessing
 
 import importlib
-utils = importlib.import_module("..lip-extraction.utils") # Import with "-"
+utils = importlib.import_module(".lip-extraction.utils") # Import with "-"
 
 def train_word_init_probs(data, vocab_size):
     """ Compute initial word probabilities. """
