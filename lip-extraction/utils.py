@@ -10,7 +10,7 @@ vocab_mapping = {0: 'sil', 1: 'bin', 2: 'lay', 3: 'place', 4: 'set', 5: 'blue', 
     24: 'l', 25: 'm', 26: 'n', 27: 'o', 28: 'p', 29: 'q', 30: 'r', 31: 's', 32: 't', 
     33: 'u', 34: 'v', 35: 'x', 36: 'y', 37: 'z', 38: 'zero', 39: 'one', 40: 'two', 41: 'three',
     42: 'four', 43: 'five', 44: 'six', 45: 'seven', 46: 'eight', 47: 'nine', 48: 'again', 49: 'now', 
-    50: 'please', 51: 'soon', 52: 'sp'}
+    50: 'please', 51: 'soon', 52: 'sp', 53: 'sil2'}
 vocab_mapping_r = {word: i for i, word in vocab_mapping.items()} # Reverse mapping
 
 
