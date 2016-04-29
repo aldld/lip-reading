@@ -81,6 +81,10 @@ class FixedHSMMInitialState(pyhsmm.internals.initial_state.HSMMInitialState):
     def resample(self, data=[]):
         return self
 
+class FixedHSMMTransitions(pyhsmm.transitions.HSMMTransitions):
+    def resample(self,stateseqs=[],trans_counts=None):
+        return self
+
 def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size, out_fn=None, eps=0.0001):
     """ Build pyhsmm HSMM from estimated parameters. """
 
@@ -120,9 +124,10 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
         dur_distns.append(poisson_duration)
 
     #int_state_distn = FixedHSMMInitialState(model=hsmm, pi_0=word_init_probs)
+    trans_distn = FixedHSMMTransitions(num_states=len(obs_distns), alpha=1.0, trans_matrix=word_trans_probs)
 
-    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns)
-    hsmm.trans_distn.trans_matrix = word_trans_probs
+    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns, trans_distn=trans_distn)
+    #hsmm.trans_distn.trans_matrix = word_trans_probs
 
     hsmm.init_state_distn = FixedHSMMInitialState(model=hsmm, pi_0=word_init_probs)
     hsmm.init_state_distn.K = vocab_size
