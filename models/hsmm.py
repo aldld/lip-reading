@@ -63,12 +63,15 @@ def gather_gmm_data(data, vocab_size):
 
     return train_data_gmm
 
+def fit_gmm(gmm, obs):
+    gmm.fit(obs)
+
 def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=False):
     """ Train word-level GMMs given the current word. """
     gmms = [GMM(n_components=n_components) for _ in train_data_gmm]
 
     if parallel:
-        multiprocessing.Pool().map(lambda gmm, obs: gmm.fit(obs), zip(gmms, train_data_gmm))
+        multiprocessing.Pool().map(fit_gmm, zip(gmms, train_data_gmm))
     else:
         for idx, obs in enumerate(train_data_gmm):
             if verbose:
