@@ -103,7 +103,7 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
 
             mix_components.append(gaussian)
 
-        obs_gmm = pybasicbayes.models.MixtureDistribution(alpha_0=1.0, components=mix_components, pi_0=weights)
+        obs_gmm = pybasicbayes.models.MixtureDistribution(alpha_0=1.0, components=mix_components, weights=weights)
 
         obs_distns.append(obs_gmm)
 
@@ -119,7 +119,7 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
 
         dur_distns.append(poisson_duration)
 
-    int_state_distn = FixedHSMMInitialState(weights=word_init_probs)
+    int_state_distn = FixedHSMMInitialState(pi_0=word_init_probs)
 
     hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns, int_state_distn=int_state_distn)
     hsmm.trans_distn.trans_matrix = word_trans_probs
