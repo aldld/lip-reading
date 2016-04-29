@@ -77,6 +77,10 @@ class FixedGaussian(pyhsmm.distributions.Gaussian):
     def resample(self, data=[]):
         return self
 
+class FixedHSMMInitialState(pyhsmm.initial_state.HSMMInitialState):
+    def resample(self, data=[]):
+        return self
+
 def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vocab_size, out_fn=None, eps=0.0001):
     """ Build pyhsmm HSMM from estimated parameters. """
 
@@ -115,10 +119,11 @@ def build_hsmm(word_init_probs, word_trans_probs, word_dur_params, word_gmms, vo
 
         dur_distns.append(poisson_duration)
 
+    int_state_distn = FixedHSMMInitialState(weights=word_init_probs)
 
-    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns)
+    hsmm = pyhsmm.models.HSMM(alpha=1.0, obs_distns=obs_distns, dur_distns=dur_distns, int_state_distn=int_state_distn)
     hsmm.trans_distn.trans_matrix = word_trans_probs
-    hsmm.init_state_distn.weights = word_init_probs
+    #hsmm.init_state_distn.weights = word_init_probs
     hsmm.init_state_distn.K = vocab_size
 
     if out_fn is not None:
