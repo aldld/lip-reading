@@ -68,7 +68,7 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=Fals
     gmms = [GMM(n_components=n_components) for _ in train_data_gmm]
 
     if parallel:
-        multiprocessing.map(lambda gmm, obs: gmm.fit(obs), zip(gmm, train_data_gmm))
+        multiprocessing.Pool().map(lambda gmm, obs: gmm.fit(obs), zip(gmm, train_data_gmm))
     else:
         for idx, obs in enumerate(train_data_gmm):
             if verbose:
