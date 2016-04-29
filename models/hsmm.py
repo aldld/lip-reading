@@ -8,6 +8,8 @@ import pybasicbayes
 
 import cPickle as pickle
 
+import multiprocessing
+
 def train_word_init_probs(data, vocab_size):
     """ Compute initial word probabilities. """
     word_init_counts = np.zeros((vocab_size,))
@@ -61,15 +63,18 @@ def gather_gmm_data(data, vocab_size):
 
     return train_data_gmm
 
-def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
+def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=False):
     """ Train word-level GMMs given the current word. """
     gmms = [GMM(n_components=n_components) for _ in train_data_gmm]
 
-    for idx, obs in enumerate(train_data_gmm):
-        if verbose:
-            print "Training GMM for word %d" % idx
-            #print obs.shape
-        gmms[idx].fit(obs)
+    if parallel:
+        multiprocessing.map(lambda gmm, obs: gmm.fit(obs), zip(gmm, train_data_gmm))
+    else:
+        for idx, obs in enumerate(train_data_gmm):
+            if verbose:
+                print "Training GMM for word %d" % idx
+                #print obs.shape
+            gmms[idx].fit(obs)
 
     return gmms
 
