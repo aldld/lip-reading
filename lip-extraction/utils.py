@@ -25,6 +25,9 @@ def read_align(align_path, rounded=True):
             f = int(round(a[1] / 1000))
             temp[i] = (s, f, a[2])
         alignments = temp
+    # This will make a second silence token to be used as a sink state
+    # in our hsmm transition matrix 
+    alignments[-1][2] = vocab_mapping[53] 
     return alignments
 
 
