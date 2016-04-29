@@ -8,6 +8,8 @@ import pybasicbayes
 
 import cPickle as pickle
 
+import multiprocessing
+
 def train_word_init_probs(data, vocab_size):
     """ Compute initial word probabilities. """
     word_init_counts = np.zeros((vocab_size,))
@@ -61,15 +63,18 @@ def gather_gmm_data(data, vocab_size):
 
     return train_data_gmm
 
-def train_word_gmms(train_data_gmm, n_components=6, verbose=False):
+def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=False):
     """ Train word-level GMMs given the current word. """
     gmms = [GMM(n_components=n_components) for _ in train_data_gmm]
 
-    for idx, obs in enumerate(train_data_gmm):
-        if verbose:
-            print "Training GMM for word %d" % idx
-            #print obs.shape
-        gmms[idx].fit(obs)
+    if parallel:
+        multiprocessing.map(lambda gmm, obs: gmm.fit(obs), zip(gmm, train_data_gmm))
+    else:
+        for idx, obs in enumerate(train_data_gmm):
+            if verbose:
+                print "Training GMM for word %d" % idx
+                #print obs.shape
+            gmms[idx].fit(obs)
 
     return gmms
 
@@ -149,7 +154,7 @@ def save_params(word_init_probs, word_trans_probs, word_dur_params, word_gmms, o
     with open(out_file, "wb") as f:
         pickle.dump(params, f)
 
-def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True):
+def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True, parallel=False):
     """ Trains a HSMM from the given complete data.
 
         data: List of observation sequences and state sequences.
@@ -183,7 +188,7 @@ def train_hsmm(data, vocab_size, n_components=6, pkl_param=None, verbose=True):
     # Train word GMMs.
     if verbose:
         print "Training GMMs..."
-    word_gmms = train_word_gmms(train_data_gmm, n_components=n_components, verbose=verbose)
+    word_gmms = train_word_gmms(train_data_gmm, n_components=n_components, verbose=verbose, parallel=parallel)
 
     if pkl_param is not None:
         # Save intermediate model, if so desired.

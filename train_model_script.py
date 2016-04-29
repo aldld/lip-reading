@@ -18,5 +18,6 @@ model = hsmm.train_hsmm(
     len(utils.vocab_mapping),
     n_components=6,
     pkl_param="model.pkl",
-    verbose=verbose
+    verbose=verbose,
+    parallel=True
     )
