@@ -63,8 +63,8 @@ def gather_gmm_data(data, vocab_size):
 
     return train_data_gmm
 
-def fit_gmm(gmm, obs):
-    gmm.fit(obs)
+def fit_gmm(pair):
+    pair[0].fit(pair[1])
 
 def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=False):
     """ Train word-level GMMs given the current word. """
