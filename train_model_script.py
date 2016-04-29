@@ -19,5 +19,5 @@ model = hsmm.train_hsmm(
     n_components=6,
     pkl_param="model.pkl",
     verbose=verbose,
-    parallel=True
+    parallel=False
     )
