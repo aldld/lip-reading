@@ -83,7 +83,7 @@ def train_word_gmms(train_data_gmm, n_components=6, verbose=False, parallel=Fals
 
             if idx == vocab_mapping_r["sil2"]:
                 continue
-            elif idx == vocab_mapping_r["sil"]
+            elif idx == vocab_mapping_r["sil"]:
                 sil_obs = np.vstack((train_data_gmm[idx], train_data_gmm[vocab_mapping_r["sil2"]]))
                 gmms[idx].fit(sil_obs)
             else:
