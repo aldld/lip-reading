@@ -13,6 +13,15 @@ vocab_mapping = {0: 'sil', 1: 'bin', 2: 'lay', 3: 'place', 4: 'set', 5: 'blue', 
     50: 'please', 51: 'soon', 52: 'sp', 53: 'sil2'}
 vocab_mapping_r = {word: i for i, word in vocab_mapping.items()} # Reverse mapping
 
+entire_set = {'s%s'%i for i in xrange(1,35) if i!=21}
+test_set = {'s%s'%i for i in xrange(28,35)}
+train_set = entire_set - test_set
+entire_set, test_set, train_set = list(entire_set), list(test_set), list(train_set)
+
+
+def inf_to_voc(inf):
+    return [vocab_mapping[i] for i in inf]
+
 
 def read_align(align_path, rounded=True):
     """ Returns the alignemnt data in the given .align file. """
