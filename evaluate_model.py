@@ -9,7 +9,7 @@ import sys, os
 from collections import defaultdict
 
 
-EXP_DIR = 'experiments'
+EXP_DIR = 'experiments_hsmm'
 
 def inf_to_voc(inf):
     return [vocab_mapping[i] for i in inf]
@@ -71,6 +71,7 @@ def evaluate(data_dir, test_set, model):
 data_dir = '/ais/gobi4/freud/temp/data'
 #test_set = [utils.test_set[-1]]
 test_set = utils.test_set
+#test_set = utils.train_set
 model_path = sys.argv[1]
 model_h = load_model(model_path)
 
